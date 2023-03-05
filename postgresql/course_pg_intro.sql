@@ -1,6 +1,4 @@
-DROP DATABASE IF EXISTS alura;
-CREATE DATABASE alura;
-DROP SCHEMA IF EXISTS data_science_pg;
+DROP SCHEMA IF EXISTS data_science_pg CASCADE;
 CREATE SCHEMA data_science_pg;
 
 /*
