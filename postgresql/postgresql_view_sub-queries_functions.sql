@@ -12,10 +12,22 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA dspg_02 GRANT USAGE ON TYPES TO postgres WITH
  */
 DROP VIEW IF EXISTS vw_courses_in_categories_with_min_students;
 DROP VIEW IF EXISTS vw_courses_in_categories_with_max_students;
+DROP VIEW IF EXISTS dspg_02.vw_ticket_to_detention;
+DROP VIEW IF EXISTS dspg_02.vw_students_ranking;
+DROP VIEW IF EXISTS dspg_02.vw_free_man;
 DROP TABLE IF EXISTS dspg_02.students_courses;
 DROP TABLE IF EXISTS dspg_02.courses;
 DROP TABLE IF EXISTS dspg_02.categories;
+DROP TABLE IF EXISTS dspg_02.students_in_detention;
 DROP TABLE IF EXISTS dspg_02.students;
+DROP TYPE IF EXISTS dspg_02.course_levels;
+
+CREATE TYPE dspg_02.course_levels AS ENUM
+(
+	'STARTING',
+	'NORMAL',
+	'EXPERT'
+);
 
 CREATE TABLE dspg_02.categories (
 	id SERIAL PRIMARY KEY,
@@ -24,15 +36,17 @@ CREATE TABLE dspg_02.categories (
 
 CREATE TABLE dspg_02.courses (
 	id SERIAL PRIMARY KEY,
+	category_id INTEGER NOT NULL REFERENCES dspg_02.categories(id),
 	course_name VARCHAR(255) NOT NULL,
-	category_id INTEGER NOT NULL REFERENCES dspg_02.categories(id)
+	course_level dspg_02.course_levels NULL
 );
 
 CREATE TABLE dspg_02.students (
 	id SERIAL PRIMARY KEY,
 	first_name VARCHAR(255) NOT NULL,
 	last_name VARCHAR(255) NOT NULL,
-	birthday DATE NOT NULL
+	birthday DATE NOT NULL,
+	ankle_monitor BOOLEAN
 );
 
 CREATE TABLE dspg_02.students_courses (
@@ -40,6 +54,13 @@ CREATE TABLE dspg_02.students_courses (
 	course_id INTEGER NOT NULL REFERENCES dspg_02.courses(id),
 	enrolled_in TIMESTAMP NOT NULL,
 	PRIMARY KEY (student_id, course_id)
+);
+
+DROP TABLE IF EXISTS dspg_02.detentions;
+CREATE TABLE dspg_02.detentions (
+	id INTEGER PRIMARY KEY,
+	full_name VARCHAR(512) NOT NULL,
+	total_courses INTEGER NOT NULL
 );
 
 /*
@@ -55,44 +76,44 @@ INSERT INTO dspg_02.categories(category_name) VALUES
 	('Dev Ops')
 ;
 
-INSERT INTO dspg_02.courses(course_name, category_id) VALUES
-	('Python', 1),
-	('Ruby', 1),
-	('Java', 1),
-	('C', 1),
-	('C++', 1),
-	('Perl', 1),
-	('PHP', 1),
-	('Modern Management', 2),
-	('Negotiation', 2),
-	('GIMP', 3),
-	('Inkscape', 3),
-	('Pandas', 4),
-	('Machine Learning', 4),
-	('Power BI', 4),
-	('PostgreSQL', 5),
-	('MySQL', 5),
-	('Oracle', 5),
-	('SQL Server', 5),
-	('SQLite', 5),
-	('Javascript/Typescript', 6),
-	('HTML/CSS', 6),
-	('Git', 7),
-	('Apache/Web Server', 7),
-	('Docker', 7),
-	('Ansible', 7)
+INSERT INTO dspg_02.courses(course_name, category_id, course_level) VALUES
+	('Python', 1, 'STARTING'),
+	('Ruby', 1, 'NORMAL'),
+	('Java', 1, 'EXPERT'),
+	('C', 1, 'EXPERT'),
+	('C++', 1, 'EXPERT'),
+	('Perl', 1, 'EXPERT'),
+	('PHP', 1, 'STARTING'),
+	('Modern Management', 2, 'STARTING'),
+	('Negotiation', 2, 'NORMAL'),
+	('GIMP', 3, 'EXPERT'),
+	('Inkscape', 3, 'NORMAL'),
+	('Pandas', 4, 'NORMAL'),
+	('Machine Learning', 4, 'EXPERT'),
+	('Power BI', 4, 'STARTING'),
+	('PostgreSQL', 5, 'EXPERT'),
+	('MySQL', 5, 'STARTING'),
+	('Oracle', 5, 'STARTING'),
+	('SQL Server', 5, 'STARTING'),
+	('SQLite', 5, 'NORMAL'),
+	('Javascript/Typescript', 6, 'NORMAL'),
+	('HTML/CSS', 6, 'NORMAL'),
+	('Git', 7, 'EXPERT'),
+	('Apache/Web Server', 7, 'EXPERT'),
+	('Docker', 7, 'NORMAL'),
+	('Ansible', 7, 'NORMAL')
 ;
 
-INSERT INTO dspg_02.students(first_name, last_name, birthday) VALUES
-	('Jefferson', 'Campos', '1984-04-01'),
-	('Jonh', 'Wick', '1980-04-01'),
-	('Greg', 'McGuire', '1974-04-01'),
-	('Mike', 'Sullivan', '1951-04-01'),
-	('Vinicius', 'Dias', '1997-10-15'),
-	('Patricia', 'Freitas', '1986-10-25'),
-	('Diogo', 'Oliveira', '1984-08-27'),
-	('Maria', 'Rosa', '1985-01-01'),
-	('Otto', 'von Bismarck', '1833-04-01')
+INSERT INTO dspg_02.students(first_name, last_name, birthday, ankle_monitor) VALUES
+	('Jefferson', 'Campos', '1984-04-01', FALSE),
+	('Jonh', 'Wick', '1980-04-01', FALSE),
+	('Greg', 'McGuire', '1974-04-01', FALSE),
+	('Mike', 'Sullivan', '1951-04-01', FALSE),
+	('Vinicius', 'Dias', '1997-10-15', FALSE),
+	('Patricia', 'Freitas', '1986-10-25', FALSE),
+	('Diogo', 'Oliveira', '1984-08-27', FALSE),
+	('Maria', 'Rosa', '1985-01-01', FALSE),
+	('Otto', 'von Bismarck', '1833-04-01', FALSE)
 ;
 
 INSERT INTO dspg_02.students_courses (student_id, course_id, enrolled_in) VALUES
@@ -144,232 +165,85 @@ INSERT INTO dspg_02.students_courses (student_id, course_id, enrolled_in) VALUES
 	(9, 17, NOW())
 ;
 
-/*
- * Reports
- */
-
--- Students wih more courses
-SELECT
-	CONCAT(s.first_name, ' ', s.last_name) AS "STUDENT_NAME",
-	COUNT(sc.course_id) AS "TOTAL_COURSES"
-FROM dspg_02.students AS s
-JOIN dspg_02.students_courses AS sc ON sc.student_id = s.id
-GROUP BY
-	-- 1,
-	-- 2
-	"STUDENT_NAME"
-ORDER BY
-	"TOTAL_COURSES" DESC,
-	"STUDENT_NAME" DESC
--- LIMIT 1
+-- insert students in detention by number of courses
+DROP VIEW IF EXISTS dspg_02.vw_students_ranking;
+CREATE OR REPLACE VIEW dspg_02.vw_students_ranking AS
+	SELECT
+		CONCAT(r_s.first_name, ' ', r_s.last_name) AS "student_name",
+		COUNT(r_sc.course_id) AS "total_courses"
+	FROM dspg_02.students AS r_s
+	JOIN dspg_02.students_courses AS r_sc ON r_sc.student_id = r_s.id
+	GROUP BY
+		"student_name"
+	ORDER BY
+		"total_courses" DESC,
+		"student_name" DESC
 ;
-
--- Course with more students
-SELECT
-	c.course_name,
-	COUNT(sc.student_id) AS "TOTAL_STUDENTS"
-FROM dspg_02.courses AS c
-JOIN dspg_02.students_courses AS sc ON sc.course_id = c.id
-GROUP BY
-	1
-ORDER BY
-	"TOTAL_STUDENTS" DESC,
-	c.course_name ASC
--- LIMIT 1
+DROP VIEW IF EXISTS dspg_02.vw_ticket_to_detention;
+CREATE OR REPLACE VIEW dspg_02.vw_ticket_to_detention AS
+	WITH
+		detention AS (
+			SELECT
+				MIN(sr."total_courses") AS "detention_min_courses"
+			FROM dspg_02.vw_students_ranking AS sr
+		)
+	SELECT
+		id,
+		CONCAT(s.first_name, ' ', s.last_name) AS "student_name",
+		COUNT(sc.course_id) AS "total_courses"
+	FROM dspg_02.students AS s
+	JOIN dspg_02.students_courses AS sc ON sc.student_id = s.id
+	GROUP BY
+		id,
+		"student_name"
+	HAVING
+		COUNT(sc.course_id) = (
+			SELECT
+				d."detention_min_courses"
+			FROM detention AS d
+		)
+	ORDER BY
+		"student_name" DESC
 ;
-
--- Categories with more students
-SELECT
-	ca.category_name,
-	COUNT(sc.student_id) AS "TOTAL_STUDENTS"
-FROM dspg_02.courses AS c
-JOIN dspg_02.students_courses AS sc ON sc.course_id = c.id
-JOIN dspg_02.categories AS ca ON c.category_id = ca.id
-GROUP BY
-	ca.category_name
-ORDER BY
-	"TOTAL_STUDENTS" DESC,
-	ca.category_name ASC
--- LIMIT 1
+INSERT INTO dspg_02.detentions(id, full_name, total_courses)
+	SELECT * FROM dspg_02.vw_ticket_to_detention
 ;
-
--- Courses from Front-end or programming
-SELECT
-	*
-FROM dspg_02.courses AS c
+UPDATE dspg_02.students AS s SET
+	ankle_monitor = TRUE
+FROM dspg_02.detentions AS d
 WHERE
-	c.category_id IN (1, 2)
+	s.id = d.id
 ;
+-- SELECT * FROM dspg_02.vw_students_ranking;
+-- SELECT * FROM dspg_02.vw_ticket_to_detention;
+-- SELECT * FROM dspg_02.detentions;
+-- SELECT * FROM dspg_02.students;
 
--- Course with categories that hasn't name with spaces
-SELECT
-	c.*,
-	ca.category_name
-FROM dspg_02.courses AS c
-JOIN dspg_02.categories AS ca ON c.category_id = ca.id
-WHERE
-	c.category_id IN (
+-- Add a course to Jonh Wick and freed him
+BEGIN;
+	INSERT INTO dspg_02.students_courses (student_id, course_id, enrolled_in) VALUES
+		(2, 23, NOW())
+	;
+	DROP VIEW IF EXISTS dspg_02.vw_free_man;
+	CREATE OR REPLACE VIEW dspg_02.vw_free_man AS
 		SELECT
-			id
-		FROM categories
+			*
+		FROM dspg_02.detentions AS d
 		WHERE
-			category_name NOT LIKE ('% %')
-	)
-;
+			d.id NOT IN (SELECT id FROM dspg_02.vw_ticket_to_detention)
+	;
+	-- SELECT * FROM dspg_02.vw_free_man;
+	DELETE
+	FROM dspg_02.detentions AS d
+	USING dspg_02.vw_free_man AS f
+	WHERE
+		d.id = f.id
+	;
+	UPDATE dspg_02.students AS s SET
+		ankle_monitor = FALSE
+	WHERE
+		s.ankle_monitor IS TRUE
+		AND s.id NOT IN (SELECT id FROM dspg_02.detentions)
+	;
+COMMIT;
 
--- CATEGORIES with MIN students
-WITH summary AS (
-	SELECT
-		ca.category_name,
-		COUNT(sc.student_id) AS "TOTAL_STUDENTS"
-	FROM dspg_02.courses AS c
-	JOIN dspg_02.students_courses AS sc ON sc.course_id = c.id
-	JOIN dspg_02.categories AS ca ON c.category_id = ca.id
-	GROUP BY
-		ca.category_name
-	ORDER BY
-		"TOTAL_STUDENTS" DESC,
-		ca.category_name ASC
-)
-SELECT
-	ca.category_name,
-	COUNT(sc.student_id) AS "TOTAL_STUDENTS"
-FROM dspg_02.courses AS c
-JOIN dspg_02.students_courses AS sc ON sc.course_id = c.id
-JOIN dspg_02.categories AS ca ON c.category_id = ca.id
-GROUP BY
-	ca.category_name
-HAVING
-	COUNT(sc.student_id) = (
-		SELECT
-			MIN("TOTAL_STUDENTS")
-		FROM summary
-	)
-ORDER BY
-	ca.category_name DESC
-;
-
--- COURSE in categories with MIN students
-DROP VIEW IF EXISTS vw_courses_in_categories_with_min_students;
-CREATE OR REPLACE VIEW vw_courses_in_categories_with_min_students AS
-	WITH
-	summary AS (
-		SELECT
-			ca.category_name,
-			COUNT(sc.student_id) AS "TOTAL_STUDENTS_PER_CATEGORY"
-		FROM dspg_02.courses AS c
-		JOIN dspg_02.students_courses AS sc ON sc.course_id = c.id
-		JOIN dspg_02.categories AS ca ON c.category_id = ca.id
-		GROUP BY
-			ca.category_name
-		ORDER BY
-			"TOTAL_STUDENTS_PER_CATEGORY" DESC,
-			ca.category_name ASC
-	),
-	min_categories AS (
-		SELECT
-			s_ca.category_name AS "CATEGORY"
-		FROM dspg_02.courses AS s_c
-		JOIN dspg_02.students_courses AS s_sc ON s_sc.course_id = s_c.id
-		JOIN dspg_02.categories AS s_ca ON s_c.category_id = s_ca.id
-		GROUP BY
-			s_ca.category_name
-		HAVING
-			COUNT(s_sc.student_id) = (
-				SELECT
-					MIN("TOTAL_STUDENTS_PER_CATEGORY")
-				FROM summary
-			)
-	)
-	SELECT
-		LOWER(c.course_name) AS "COURSE_NAME",
-		UPPER(ca.category_name) AS "CATEGORY_NAME",
-		COUNT(sc.student_id) AS "TOTAL_STUDENTS_PER_COURSE"
-	FROM dspg_02.courses AS c
-	JOIN dspg_02.students_courses AS sc ON sc.course_id = c.id
-	JOIN dspg_02.categories AS ca ON c.category_id = ca.id
-	GROUP BY
-		c.course_name,
-		ca.category_name
-	HAVING
-		ca.category_name IN (
-			SELECT
-				"CATEGORY"
-			FROM min_categories
-		)
-	ORDER BY
-		ca.category_name DESC,
-		c.course_name ASC
-;
-SELECT * FROM vw_courses_in_categories_with_min_students;
-
--- COURSE in categories with MAX students
-DROP VIEW IF EXISTS vw_courses_in_categories_with_max_students;
-CREATE OR REPLACE VIEW vw_courses_in_categories_with_max_students AS
-	WITH
-	summary AS (
-		SELECT
-			ca.category_name,
-			COUNT(sc.student_id) AS "TOTAL_STUDENTS_PER_CATEGORY"
-		FROM dspg_02.courses AS c
-		JOIN dspg_02.students_courses AS sc ON sc.course_id = c.id
-		JOIN dspg_02.categories AS ca ON c.category_id = ca.id
-		GROUP BY
-			ca.category_name
-		ORDER BY
-			"TOTAL_STUDENTS_PER_CATEGORY" DESC,
-			ca.category_name ASC
-	),
-	max_categories AS (
-		SELECT
-			s_ca.category_name AS "CATEGORY"
-		FROM dspg_02.courses AS s_c
-		JOIN dspg_02.students_courses AS s_sc ON s_sc.course_id = s_c.id
-		JOIN dspg_02.categories AS s_ca ON s_c.category_id = s_ca.id
-		GROUP BY
-			s_ca.category_name
-		HAVING
-			COUNT(s_sc.student_id) = (
-				SELECT
-					MAX("TOTAL_STUDENTS_PER_CATEGORY")
-				FROM summary
-			)
-	)
-	SELECT
-		UPPER(c.course_name) AS "COURSE_NAME",
-		LOWER(ca.category_name) AS "CATEGORY_NAME",
-		COUNT(sc.student_id) AS "TOTAL_STUDENTS_PER_COURSE"
-	FROM dspg_02.courses AS c
-	JOIN dspg_02.students_courses AS sc ON sc.course_id = c.id
-	JOIN dspg_02.categories AS ca ON c.category_id = ca.id
-	GROUP BY
-		c.course_name,
-		ca.category_name
-	HAVING
-		ca.category_name IN (
-			SELECT
-				"CATEGORY"
-			FROM max_categories
-		)
-	ORDER BY
-		ca.category_name DESC,
-		c.course_name ASC
-;
-SELECT * FROM vw_courses_in_categories_with_max_students;
-
--- Manipulation of views
-SELECT
-	*
-FROM vw_courses_in_categories_with_max_students AS v
-WHERE
-	v."COURSE_NAME" LIKE '%C%'
-;
-
--- Date manipulation
-SELECT
-	(s.first_name || ' ' || s.last_name) AS "FULL_NAME",
-	NOW()::DATE,
-	s.birthday,
-	AGE(s.birthday) AS "STUDENT_AGE_FULL",
-	EXTRACT(YEAR FROM AGE(s.birthday)) AS "STUDENT_AGE"
-FROM dspg_02.students AS s;
