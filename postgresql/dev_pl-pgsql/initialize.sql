@@ -206,11 +206,18 @@ BEGIN
 
     v_percentage := v_poorest_instructors::DECIMAL / v_total_instructors::DECIMAL * 100;
 
+    RAISE NOTICE 'Instructor is INTO % richiers.', v_percentage;
+
+    ASSERT v_percentage < 100::DECIMAL, 'No new instructor can have a starting salary greater than olders...';
+
     INSERT INTO dev_plpgsql.instructor_logs (information) VALUES
         (NEW.instructor_name || ' has better salary than ' || v_percentage || '% of all instructors.')
     ;
 
     RETURN NEW;
+EXCEPTION
+    WHEN division_by_zero THEN
+        RETURN NEW;
 END;
 $$;
 
