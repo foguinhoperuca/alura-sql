@@ -45,8 +45,15 @@ SELECT dev_plpgsql.fn_create_instructor('Jeff 2', 2000.00);
  */
 
 INSERT INTO dev_plpgsql.instructors (instructor_name, salary) VALUES
-    ('Jhon Wayne Jr.', 256.32)
+    ('Johon Wayne Jr.', 256.32)
 ;
+
+BEGIN;
+    INSERT INTO dev_plpgsql.instructors (instructor_name, salary) VALUES
+        ('Billy Billboard', 1024.16)
+    ;
+    ROLLBACK;
+END;
 
 SELECT * FROM dev_plpgsql.instructors i;
 SELECT * FROM dev_plpgsql.instructor_logs il;
