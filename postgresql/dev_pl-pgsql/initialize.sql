@@ -253,8 +253,8 @@ DECLARE
   v_salary_avarage DECIMAL;
   v_poorest_instructors INTEGER DEFAULT 0;
   v_total_instructors INTEGER DEFAULT 0;
-  v_salary DECIMAL;
-  v_percentage DECIMAL;
+  v_salary DECIMAL(10, 2);
+  v_percentage DECIMAL(10, 2);
   v_cursor_salaries refcursor;
 BEGIN
   SELECT AVG(i.salary) INTO v_salary_avarage FROM dev_plpgsql.instructors AS i WHERE i.id <> NEW.id;
