@@ -1,6 +1,8 @@
 DROP DATABASE IF EXISTS alura_dev_plpgsql;
 DROP SCHEMA IF EXISTS dev_plpgsql CASCADE;
 
+DROP TRIGGER IF EXISTS tg_create_instructor_logs ON dev_plpgsql.instructors;
+DROP FUNCTION IF EXISTS dev_plpgsql.fn_create_instructor_trigger;
 DROP FUNCTION IF EXISTS dev_plpgsql.fn_create_course;
 DROP FUNCTION IF EXISTS dev_plpgsql.fn_create_instructor;
 DROP TABLE IF EXISTS dev_plpgsql.instructor_logs;
@@ -116,7 +118,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql
 
-DROP FUNCTION IF EXISTS dev_plpgsql.fn_create_instructor;
 CREATE OR REPLACE FUNCTION dev_plpgsql.fn_create_instructor(v_instructor_name VARCHAR, v_instructor_salary DECIMAL) RETURNS void AS
 $$
 DECLARE
@@ -166,3 +167,55 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql
 
+DROP TRIGGER IF EXISTS tg_create_instructor_logs ON dev_plpgsql.instructors;
+DROP FUNCTION IF EXISTS dev_plpgsql.fn_create_instructor_trigger;
+CREATE OR REPLACE FUNCTION dev_plpgsql.fn_create_instructor_trigger() RETURNS TRIGGER LANGUAGE plpgsql AS
+$$
+DECLARE
+    v_salary_avarage DECIMAL;
+    v_poorest_instructors INTEGER DEFAULT 0;
+    v_total_instructors INTEGER DEFAULT 0;
+    v_salary DECIMAL;
+    v_percentage DECIMAL;
+BEGIN
+    SELECT
+        AVG(i.salary) INTO v_salary_avarage
+    FROM dev_plpgsql.instructors AS i
+    WHERE
+        i.id <> NEW.id
+    ;
+
+    IF NEW.salary > v_salary_avarage THEN
+        INSERT INTO dev_plpgsql.instructor_logs (information) VALUES
+            (NEW.instructor_name || ' has better salary than avarage.')
+        ;
+    END IF;
+
+    FOR v_salary IN
+        SELECT
+            i.salary
+        FROM dev_plpgsql.instructors AS i
+        WHERE
+            i.id <> NEW.id
+    LOOP
+        v_total_instructors := v_total_instructors + 1;
+        IF NEW.salary > v_salary THEN
+            v_poorest_instructors := v_poorest_instructors + 1;
+        END IF;
+    END LOOP;
+
+    v_percentage := v_poorest_instructors::DECIMAL / v_total_instructors::DECIMAL * 100;
+
+    INSERT INTO dev_plpgsql.instructor_logs (information) VALUES
+        (NEW.instructor_name || ' has better salary than ' || v_percentage || '% of all instructors.')
+    ;
+
+    RETURN NEW;
+END;
+$$;
+
+CREATE OR REPLACE TRIGGER tg_create_instructor_logs
+    AFTER INSERT ON dev_plpgsql.instructors
+    FOR EACH ROW
+    EXECUTE FUNCTION dev_plpgsql.fn_create_instructor_trigger()
+;

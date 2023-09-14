@@ -39,3 +39,14 @@ FROM dev_plpgsql.instructor_logs AS l
 -- EXECUTE dev_plpgsql.fn_create_instructor('Jeff', 1000);
 SELECT dev_plpgsql.fn_create_instructor('Jeff 1', 1000.00);
 SELECT dev_plpgsql.fn_create_instructor('Jeff 2', 2000.00);
+
+/*
+ * Triggers
+ */
+
+INSERT INTO dev_plpgsql.instructors (instructor_name, salary) VALUES
+    ('Jhon Wayne Jr.', 256.32)
+;
+
+SELECT * FROM dev_plpgsql.instructors i;
+SELECT * FROM dev_plpgsql.instructor_logs il;
