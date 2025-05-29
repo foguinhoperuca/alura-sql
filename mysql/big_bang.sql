@@ -1,0 +1,2 @@
+DROP USER IF EXISTS 'alura_mysql'@'%';
+CREATE USER 'alura_mysql'@'%' IDENTIFIED BY '<MY_SECRET_PASSOWRD_HERE>';
