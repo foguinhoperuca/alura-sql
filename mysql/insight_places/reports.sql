@@ -1,3 +1,5 @@
+USE insight_places;
+
 -- -- Excelent accommodations
 -- SELECT
 --   *
@@ -56,14 +58,64 @@
 --   client_id
 -- ;
 
--- Avarage time
-SELECT
-  client_id,
-  AVG(DATEDIFF(r.end_date, start_date)) AS "avarage_stays_in_days"
-FROM insight_places.rents AS r
-GROUP BY
-  client_id
- ORDER BY
-   avarage_stays_in_days DESC
-LIMIT 10
-;
+-- -- Avarage time
+-- SELECT
+--   client_id,
+--   AVG(DATEDIFF(r.end_date, start_date)) AS "avarage_stays_in_days"
+-- FROM insight_places.rents AS r
+-- GROUP BY
+--   client_id
+--  ORDER BY
+--    avarage_stays_in_days DESC
+-- LIMIT 10
+-- ;
+
+-- /**
+--  * Study for owners: owners with more active properties.
+--  * The original join in mysql_conhecendo_a_ferramenta.4-05 using o.owner_name IS WORONG (bring togheter different owners in same count - is counting homonyms!)
+--  */
+-- WITH
+--   accommodation_type_active AS (
+--     SELECT
+--       a.accommodation_type,
+--       COUNT(*) AS "total_by_type_active"
+--     FROM insight_places.accommodations AS a
+--     WHERE
+--       a.active IS TRUE
+--     GROUP BY
+--       a.accommodation_type
+--   ),
+--   accommodation_type_total AS (
+--     SELECT
+--       accommodation_type,
+--       COUNT(*) AS "total_by_type"
+--     FROM insight_places.accommodations AS a
+--     GROUP BY
+--       a.accommodation_type
+--   ),
+--   -- This join is different from course: using owner.id instead of owner.owner_name
+--   total_accommodation_by_owner AS (
+--     SELECT
+--       ow.id,
+--       COUNT(ac.id) AS "total_accommodations_by_owner"
+--     FROM owners AS ow
+--     LEFT JOIN insight_places.accommodations AS ac ON ow.id = ac.owner_id
+--     WHERE
+--       ac.active IS TRUE
+--     GROUP BY
+--       ow.id
+--   )
+-- SELECT
+--   CONCAT(o.owner_name, ' CPF/CNPJ ', o.cpf_cnpj) AS "Owner",
+--   ao.total_accommodations_by_owner,
+--   t.total_by_type AS "TOTAL by Type",
+--   ta.total_by_type_active AS "ACTIVES"
+-- FROM insight_places.owners AS o
+-- LEFT JOIN insight_places.accommodations AS a ON a.owner_id = o.id
+-- LEFT JOIN total_accommodation_by_owner AS ao ON o.id = ao.id
+-- LEFT JOIN accommodation_type_total AS t ON t.accommodation_type = a.accommodation_type
+-- LEFT JOIN accommodation_type_active AS ta ON ta.accommodation_type = a.accommodation_type
+-- ORDER BY
+--   ao.total_accommodations_by_owner
+-- -- LIMIT 10
+-- ;
