@@ -1,7 +1,0 @@
-DROP DATABASE IF EXISTS alura;
-CREATE DATABASE alura;
-
-ALTER DATABASE alura OWNER TO postgres;
-GRANT ALL ON DATABASE alura TO postgres WITH GRANT OPTION;
-
--- TODO create specific user
