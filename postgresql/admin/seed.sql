@@ -1,21 +1,24 @@
--- TODO rename field name
+COPY frutally.customers (identification_document, customer_name, address_line_one, address_line_two, neighborhood, city, state, zip_code, birthday, age, gender, credit_limit, purchase_volume, first_time_buying)
+    FROM '/tmp/pgdata/4010_customers.csv'
+    WITH (FORMAT csv, HEADER false, DELIMITER ';', QUOTE '"')
+;
 
-COPY customers (CPF, NOME, ENDERECO_1, ENDERECO_2, BAIRRO, CIDADE, ESTADO, CEP, DATA_DE_NASCIMENTO, IDADE, SEXO, LIMITE_DE_CREDITO, VOLUME_DE_COMPRA, PRIMEIRA_COMPRA)
-FROM 'C:/POSTCUR/customers.csv'
-WITH (FORMAT csv, HEADER false, DELIMITER ';', QUOTE '"');
+COPY frutally.products (code, product_name, packaging, product_size, flavor, list_price)
+    FROM '/tmp/pgdata/4010_products.csv'
+    WITH (FORMAT csv, HEADER false, DELIMITER ';', QUOTE '"')
+;
 
-COPY products (CODIGO_DO_PRODUTO, NOME_DO_PRODUTO, EMBALAGEM, TAMANHO, SABOR, PRECO_DE_LISTA)
-FROM 'C:/POSTCUR/products.csv'
-WITH (FORMAT csv, HEADER false, DELIMITER ';', QUOTE '"');
+COPY frutally.salesmans (registration_number, salesman_name, commission_rate, admission, vacation, neighborhood)
+    FROM '/tmp/pgdata/4010_salesmans.csv'
+    WITH (FORMAT csv, HEADER false, DELIMITER ';', QUOTE '"')
+;
 
-COPY salesmans (MATRICULA, NOME, PERCENTUAL_COMISSAO, DATA_ADMISSAO, DE_FERIAS, BAIRRO)
-FROM 'C:/POSTCUR/salesmans.csv'
-WITH (FORMAT csv, HEADER false, DELIMITER ';', QUOTE '"');
+COPY frutally.invoices (identification_document, registration_number, sold, invoice_number, taxes)
+    FROM '/tmp/pgdata/4010_invoices.csv'
+    WITH (FORMAT csv, HEADER false, DELIMITER ';', QUOTE '"')
+;
 
-COPY frutally.invoices (CPF, MATRICULA, DATA_VENDA, NUMERO, IMPOSTO)
-FROM 'C:/POSTCUR/invoices.csv'
-WITH (FORMAT csv, HEADER false, DELIMITER ';', QUOTE '"');
-
-COPY frutally.invoice_items (NUMERO, CODIGO_DO_PRODUTO, QUANTIDADE, PRECO)
-FROM 'C:/POSTCUR/invoice_items.csv'
-WITH (FORMAT csv, HEADER false, DELIMITER ';', QUOTE '"');
+COPY frutally.invoice_items (invoice_item_number, product_code, quantity, price)
+    FROM '/tmp/pgdata/4010_invoice_items.csv'
+    WITH (FORMAT csv, HEADER false, DELIMITER ';', QUOTE '"')
+;

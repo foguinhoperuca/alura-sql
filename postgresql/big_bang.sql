@@ -37,7 +37,7 @@ CREATE ROLE :alura_role WITH
 
 
 GRANT :alura_role, syspms TO :alura_user;
-GRANT :alura_role TO alura_Manager;
+GRANT :alura_role TO alura_manager;
 
 GRANT CONNECT ON DATABASE :alura_db TO :alura_user;
 GRANT CONNECT ON DATABASE :alura_db TO :alura_role;

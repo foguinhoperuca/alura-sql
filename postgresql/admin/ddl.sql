@@ -1,5 +1,5 @@
-DROP TABLE IF EXISTS salesmans;
-CREATE TABLE salesmans (
+DROP TABLE IF EXISTS frutally.salesmans;
+CREATE TABLE frutally.salesmans (
   registration_number VARCHAR(8) NOT NULL,
   salesman_name VARCHAR(128),
   commission_rate REAL,
@@ -8,8 +8,8 @@ CREATE TABLE salesmans (
   neighborhood VARCHAR(64)
 );
 
-DROP TABLE IF EXISTS products;
-CREATE TABLE products (
+DROP TABLE IF EXISTS frutally.products;
+CREATE TABLE frutally.products (
   code VARCHAR(16) NOT NULL,
   product_name VARCHAR(64),
   packaging VARCHAR(32),
@@ -18,8 +18,8 @@ CREATE TABLE products (
   list_price REAL NOT NULL
 );
 
-DROP TABLE IF EXISTS customers;
-CREATE TABLE customers (
+DROP TABLE IF EXISTS frutally.customers;
+CREATE TABLE frutally.customers (
   identification_document VARCHAR(16) NOT NULL,
   customer_name VARCHAR(100),
   -- FIXME is address_line or two different places!?
@@ -37,8 +37,8 @@ CREATE TABLE customers (
   first_time_buying BOOLEAN
 );
 
-DROP TABLE IF EXISTS invoices;
-CREATE TABLE invoices (
+DROP TABLE IF EXISTS frutally.invoices;
+CREATE TABLE frutally.invoices (
   identification_document VARCHAR(16) NOT NULL,
   registration_number VARCHAR(8) NOT NULL,
   sold DATE,
@@ -46,8 +46,8 @@ CREATE TABLE invoices (
   taxes REAL NOT NULL
 );
 
-DROP TABLE IF EXISTS invoice_items;
-CREATE TABLE invoice_items (
+DROP TABLE IF EXISTS frutally.invoice_items;
+CREATE TABLE frutally.invoice_items (
   invoice_item_number INT NOT NULL,
   product_code VARCHAR(16) NOT NULL,
   quantity INT NOT NULL,
