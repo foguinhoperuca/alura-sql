@@ -53,3 +53,6 @@ CREATE TABLE frutally.invoice_items (
   quantity INT NOT NULL,
   price REAL NOT NULL
 );
+
+ -- backup_restore: class 01.03
+ALTER TABLE invoice ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;

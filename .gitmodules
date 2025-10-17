@@ -1,0 +1,3 @@
+[submodule "postgresql/forge"]
+	path = postgresql/forge
+	url = git@github.com:foguinhoperuca/forge.git

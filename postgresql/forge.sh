@@ -1,16 +1,16 @@
 #!/bin/bash
 
-# SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# 
-# echo "--------------------------- forge.sh ==> $SCRIPT_DIR ---------------------------"
-# source $SCRIPT_DIR/forge/main.sh
-# echo "--------------------------- forge.sh ==> $SCRIPT_DIR ---------------------------"
-# 
-# # Put all customization bellow
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+echo "--------------------------- forge.sh ==> $SCRIPT_DIR ---------------------------"
+source $SCRIPT_DIR/forge/main.sh
+echo "--------------------------- forge.sh ==> $SCRIPT_DIR ---------------------------"
+
+# Put all customization bellow
 # export RIVER_APP_PWD=$(cat $BOT_ENV_FILE | grep RIVER_APP_PWD | cut -d = -f2)
 
 
-vars() {
+local_vars() {
     export PGPASSFILE=".pgpass"
     export PGHOST=""
     export PGPORT=""
@@ -44,8 +44,8 @@ db_script() {
 }
 
 case $1 in
-    "env")
-        vars $2
+    "local_vars")
+        local_vars $2
         ;;
     "db_script")
         db_script $DB_HOST $DB_PORT $DB_DATABASE $DB_USER $2

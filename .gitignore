@@ -9,3 +9,5 @@
 
 # Postgresql
 .pgpass*
+.target*
+.mise-en-place*
