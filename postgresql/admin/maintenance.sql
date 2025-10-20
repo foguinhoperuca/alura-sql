@@ -1,8 +1,8 @@
 -- postgresql-administracao-monitoramento.05
-VACUUM;
-VACUUM FULL;
-ANALYZE;
-VACUUM ANALYZE;
+-- VACUUM;
+-- VACUUM FULL;
+-- ANALYZE;
+-- VACUUM ANALYZE;
 
 -- Verify optimizations
 SELECT
