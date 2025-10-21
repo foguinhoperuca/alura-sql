@@ -25,6 +25,10 @@ db-pgbasebackup: BACKUP_DIR=/tmp/pg/backup/
 db-pgbasebackup:
 	pg_basebackup -U $(DB_ADMIN_USER) -D $(BACKUP_DIR) -Ft -z -X fetch
 
+db-pgrestore: BACKUP_FILE=/tmp/pg/backup/restore_me.bkp
+db-pgrestore:
+	pg_restore --clean --if-exists -U $(DB_ADMIN_USER) -d $(DB_ADMIN_DATABASE) $(BACKUP_FILE)
+
 db-monitoring-mswindows:
 	4010_management_monitoring/alert_time_query.ps1
 	4010_management_monitoring/alert_time_query_gmail.ps1
