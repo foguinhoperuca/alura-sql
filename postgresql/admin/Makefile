@@ -37,6 +37,9 @@ db-monitoring-mswindows:
 db-backup-mswindows:
 	backup_restore/backup_incremental.ps1
 
+db-pgwalldump:
+	pg_waldump -q $(WAL_FILENAME)
+
 MAKEFILE_DIR := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 
 include $(MAKEFILE_DIR)../../forge/main.mk
