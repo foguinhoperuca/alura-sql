@@ -55,4 +55,22 @@ CREATE TABLE frutally.invoice_items (
 );
 
  -- backup_restore: class 01.03
-ALTER TABLE invoice ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE frutally.invoices ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+
+-- performance_optimization 01.02
+DROP TABLE IF EXISTS frutally.customers_geo;
+CREATE TABLE frutally.customers_geo (
+  identification_document VARCHAR(16) NOT NULL,
+  geom GEOMETRY(POINT, 4326)
+);
+
+DROP FUNCTION IF EXISTS frutally.simulate_delay;
+CREATE OR REPLACE FUNCTION frutally.simulate_delay(p_iterations INT) RETURNS VOID AS $$
+DECLARE
+    i INT;
+BEGIN
+    FOR i IN 1..p_iterations LOOP
+        PERFORM pg_sleep(0.001);
+    END LOOP;
+END;
+$$ LANGUAGE plpgsql;

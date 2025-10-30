@@ -1,6 +1,21 @@
 .PHONY: db-script
 
 db-get-extra-content:
+	# postgresql-administracao-monitoramento.01.05
+	wget https://cdn3.gnarususercontent.com.br/4010-postgreSQL/4010%20-%20Video%201.3%20Download.zip
+
+	# postgresql-administracao-monitoramento.02.06
+	wget https://cdn3.gnarususercontent.com.br/4010-postgreSQL/4010%20-%20Video%202.3%20Download.zip
+
+	# postgresql-administracao-monitoramento.04.05
+	wget https://cdn3.gnarususercontent.com.br/4010-postgreSQL/4010%20-%20Video%204.3%20Download.zip
+
+	# postgresql-administracao-monitoramento.04.08
+	wget https://cdn3.gnarususercontent.com.br/4010-postgreSQL/4010%20-%20Video%204.4%20Download.zip
+
+	# postgresql-administracao-monitoramento.05.03
+	wget https://cdn3.gnarususercontent.com.br/4010-postgreSQL/4010%20-%20Video%205.2%20Download.zip
+
 	# administracao-postgresql-backup-recuperacao.02.01
 	wget https://cdn3.gnarususercontent.com.br/4011-postgresql/Projeto%20-%20Arquivos%20para%20download/4011%20-%20Video%202.1%20-%20Download.zip
 
@@ -12,6 +27,12 @@ db-get-extra-content:
 
 	# administracao-postgresql-backup-recuperacao.02.12
 	wget https://cdn3.gnarususercontent.com.br/4011-postgresql/Projeto%20-%20Arquivos%20para%20download/4011%20-%20Video%202.4%20-%20Download.zip
+
+	# administracao-postgresql-desempenho-otimizacao.01.02
+	wget https://cdn3.gnarususercontent.com.br/4012-postgresql/Projeto%20-%20Download/4012%20-%20Preparando%20o%20ambiente%20-%20Modificando%20a%20base%20de%20dados%20Frutally%20Vendas/4012%20-%20Preparando%20o%20ambiente%20-%20Modificando%20a%20base%20de%20dados%20Frutally%20Vendas.zip
+
+	# administracao-postgresql-desempenho-otimizacao.01.03
+	wget https://cdn3.gnarususercontent.com.br/4012-postgresql/Projeto%20-%20Download/4012%20-%20Preparando%20o%20ambiente%20-%20Scripts%20do%20curso/4012%20-%20Preparando%20o%20ambiente%20-%20Scripts%20do%20curso.zip
 
 db-pgbench:
 	pgbench -i -s 10 pgbench_test
@@ -42,7 +63,7 @@ db-pgwalldump:
 
 MAKEFILE_DIR := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 
-include $(MAKEFILE_DIR)../../forge/main.mk
-include $(MAKEFILE_DIR)../../forge/python.mk
-include $(MAKEFILE_DIR)../../forge/database.mk
-include $(MAKEFILE_DIR)../../forge/geo.mk
+include $(MAKEFILE_DIR)/forge/main.mk
+include $(MAKEFILE_DIR)/forge/python.mk
+include $(MAKEFILE_DIR)/forge/database.mk
+include $(MAKEFILE_DIR)/forge/geo.mk
