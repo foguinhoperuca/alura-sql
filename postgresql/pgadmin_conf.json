@@ -1,0 +1,24 @@
+{
+    "Servers": {
+        "1": {
+            "Name": "postgres@localhost/alura",
+            "Group": "03 LOCAL",
+            "Host": "XXX.XXX.XXX.XXX",
+            "Port": 5432,
+            "MaintenanceDB": "alura",
+            "Username": "postgres",
+            "DBRestrictionType": "databases",
+            "UseSSHTunnel": 0,
+            "TunnelPort": "22",
+            "TunnelAuthentication": 0,
+            "TunnelPromptPassword": 0,
+            "TunnelKeepAlive": 0,
+            "KerberosAuthentication": false,
+            "ConnectionParameters": {
+                "sslmode": "prefer",
+                "connect_timeout": 10
+            },
+            "Tags": []
+        }
+    }
+}
