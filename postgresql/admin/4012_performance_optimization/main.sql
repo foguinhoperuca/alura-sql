@@ -64,6 +64,7 @@ REINDEX TABLE frutally.customers;
 /**
  * 02 - Índices e suas Aplicações para Otimização
  */
+
 --
 -- 02.01
 --
@@ -134,3 +135,301 @@ EXPLAIN ANALYZE SELECT * FROM frutally.customers WHERE neighborhood = 'Jardins';
 
 CREATE INDEX idx_registration_number ON frutally.salesmans(registration_number);
 SELECT * FROM frutally.salesmans WHERE registration_number = '00236';
+
+/**
+ * 03 - Análise e Otimização de Consultas Avançadas
+ */
+
+--
+-- 03.01
+--
+EXPLAIN SELECT * FROM frutally.customers WHERE neighborhood = 'Centro';
+EXPLAIN ANALYZE SELECT * FROM frutally.customers WHERE neighborhood = 'Centro';
+
+EXPLAIN ANALYZE SELECT * FROM frutally.customers WHERE purchase_volume > 10000;
+
+EXPLAIN ANALYZE
+SELECT
+    c.customer_name,
+    i.sold
+FROM frutally.customers AS c
+JOIN frutally.invoices AS i ON i.identification_document = c.identification_document
+WHERE
+    i.sold > '2023-01-01'
+;
+
+EXPLAIN (ANALYZE, FORMAT JSON)
+SELECT
+    c.customer_name,
+    i.sold
+FROM frutally.customers AS c
+JOIN frutally.invoices AS i ON i.identification_document = c.identification_document
+WHERE
+    i.sold > '2023-01-01'
+;
+
+--
+-- 03.03
+--
+EXPLAIN ANALYZE
+SELECT
+    c.customer_name,
+    i.sold
+FROM frutally.customers AS c
+JOIN frutally.invoices AS i ON i.identification_document = c.identification_document
+WHERE
+    i.sold > '2023-01-01'
+;
+
+EXPLAIN (ANALYZE, FORMAT JSON)
+SELECT
+    c.customer_name,
+    i.sold
+FROM frutally.customers AS c
+JOIN frutally.invoices AS i ON i.identification_document = c.identification_document
+WHERE
+    i.sold > '2023-01-01'
+;
+
+CREATE INDEX idx_sold ON frutally.invoices(sold);
+EXPLAIN (ANALYZE, FORMAT JSON)
+SELECT
+    c.customer_name,
+    i.sold
+FROM frutally.customers AS c
+JOIN frutally.invoices AS i ON i.identification_document = c.identification_document
+WHERE
+    i.sold > '2023-01-01'
+;
+
+CREATE INDEX idx_identification_document ON invoices(identification_document);
+EXPLAIN (ANALYZE, FORMAT JSON)
+SELECT
+    c.customer_name,
+    i.sold
+FROM frutally.customers AS c
+JOIN frutally.invoices AS i ON i.identification_document = c.identification_document
+WHERE
+    i.sold > '2023-01-01'
+;
+
+DROP INDEX idx_identification_document;
+CREATE INDEX idx_sold ON frutally.invoices(sold);
+EXPLAIN (ANALYZE, FORMAT JSON)
+SELECT
+    c.customer_name,
+    i.sold
+FROM frutally.customers AS c
+JOIN frutally.invoices AS i ON i.identification_document = c.identification_document
+WHERE
+    i.sold > '2023-01-01'
+;
+
+--
+-- 03.05
+--
+EXPLAIN (ANALYZE, FORMAT JSON)
+SELECT
+    customer_name
+FROM frutally.customers
+WHERE
+    identification_document IN (
+        SELECT
+            identification_document
+        FROM frutally.invoices
+        WHERE
+            sold > '2023-01-01'
+    )
+;
+
+EXPLAIN (ANALYZE, FORMAT JSON)
+SELECT
+    c.customer_name
+FROM frutally.cutomers AS c
+JOIN frutally.invoices AS i ON c.identification_document = i.identification_document
+WHERE
+    i.sold > '2023-01-01'
+;
+DROP INDEX idx_identification_document_customer_hash;
+DROP INDEX idx_sold;
+
+EXPLAIN (FORMAT JSON)
+SELECT
+    c.customeri_name,
+    (SELECT MAX(sold) FROM frutally.invoices AS i WHERE i.identification_document = c.identification_document) AS 'last_buy'
+FROM frutally.customers AS c
+;
+EXPLAIN (FORMAT JSON)
+WITH
+    last_sell AS (
+        SELECT
+            i.identification_document,
+            MAX(sold) AS 'Last_buy'
+        FROM frutally.invoices AS i
+        GROUP BY
+            i.identification_document
+    )
+SELECT
+    c.customer_name,
+    l.last_buy
+FROM frutally.customers AS c
+JOIN last_sell AS l ON c.identification_document = l.identification_document
+;
+
+EXPLAIN ANALYZE
+SELECT
+    age,
+    COUNT(*)
+FROM frutally.customers AS c
+GROUP BY
+    c.age
+HAVING
+    COUNT(*) > 10
+;
+EXPLAIN ANALYZE
+SELECT
+    age,
+    COUNT(*)
+FROM frutally.customers AS c
+WHERE
+    c.age <> 0
+GROUP BY
+    c.age
+HAVING
+    COUNT(*) > 10
+;
+
+EXPLAIN (FORMAT JSON)
+SELECT
+    product_name,
+    (SELECT SUM(t.quantity) FROM frutally.invoice_items AS t WHERE t.product_code = p.code) * 0.10 AS 'cost'
+FROM frutally.products AS p
+;
+EXPLAIN (FORMAT JSON)
+WITH
+    quantity_total AS (
+        SELECT
+            product_code,
+            SUM(quantity) AS qnt
+        FROM invoice_items AS i
+        GROUP BY
+            i.product_code
+    )
+SELECT
+    p.product_name,
+    q.qnt * 0.10 AS 'commission'
+FROM frutally.products AS p
+LEFT JOIN quantity_total AS q ON p.code = q.product_code
+;
+
+UPDATE frutally.customers SET
+    age = 01
+WHERE
+    SUBSTRING(customer_name, 1, 7) = 'Client'
+;
+
+--
+-- 03.07
+--
+EXPLAIN (FORMAT JSON)
+SELECT
+    c.customer_name,
+    (SELECT
+        SUM(t.quantity) AS qnt
+    FROM frutally.invoices AS i
+    INNER JOIN invoices_items AS t ON i.invoice_number = t.invoice_item_number
+    WHERE
+        sold >= '2022-01-01'
+        AND i.identification_document = c.identification_document
+    ) AS 'total_sells'
+FROM frutally.customers AS c
+;
+
+EXPLAIN (FORMAT JSON)
+WITH
+    sells_2022 AS (
+        SELECT
+            i.identification_document,
+            SUM(t.quantity) AS qnt
+        FROM frutally.invoices AS i
+        INNER JOIN invoice_items AS t ON i.invoice_number = t.invoice_item_number
+        WHERE
+            sold >= '2022-01-01'
+        GROUP BY
+            i.cpf
+    )
+SELECT
+    c.customer_name,
+    s.qnt
+FROM frutally.customers AS c
+JOIN sells_2022 AS s ON c.identification_document = v.identification_document
+;
+
+CREATE INDEX idx_identification_document_hash ON frutally.customers USING HASH(identification_document);
+CREATE INDEX idx_sold ON frutally.invoices(sold);
+CREATE INDEX idx_invoice_identification_document ON frutally.invoices(identification_document);
+EXPLAIN (FORMAT JSON)
+WITH
+    sells_2022 AS (
+        SELECT
+            i.identification_document,
+            SUM(t.quantity) AS qnt
+        FROM frutally.invoices AS i
+        INNER JOIN invoice_items AS t ON i.invoice_number = t.invoice_item_number
+        WHERE
+            sold >= '2022-01-01'
+        GROUP BY
+            i.cpf
+    )
+SELECT
+    c.customer_name,
+    s.qnt
+FROM frutally.customers AS c
+JOIN sells_2022 AS s ON c.identification_document = v.identification_document
+;
+
+/**
+ * 04 - Estruturação e Manutenção de Tabelas oara Desempenho
+ */
+
+--
+-- 04.01
+--
+
+--
+-- 04.03
+--
+
+--
+-- 04.05
+--
+
+--
+-- 04.07
+--
+
+
+/**
+ * 05 - Otimização Prática de Consuiltas SQL no PostgreSQL
+ */
+
+
+--
+-- 05.01
+--
+
+--
+-- 05.03
+--
+
+--
+-- 05.05
+--
+
+--
+-- 05.07
+--
+
+--
+-- 05.09
+--
