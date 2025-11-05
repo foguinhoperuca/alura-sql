@@ -395,20 +395,113 @@ JOIN sells_2022 AS s ON c.identification_document = v.identification_document
 --
 -- 04.01
 --
+SELECT
+    relname AS "table_name",
+    indexrelname AS "index_name"
+FROM pg_stat_user_indexes
+WHERE
+    schemaname = 'frutally'
+;
+
+-- TODO implement an pgplsql to drop all indexes found
+
+EXPLAIN (ANALYZE, FORMAT JSON)
+SELECT
+    c.customer_name,
+    SUM(i.quantity * i.price) AS "invoicing"
+FROM frutally.customers AS c
+INNER JOIN frutally.invoices AS i ON c.identification_document = i.identification_document
+INNER JOIN frutally.invoice_items AS t ON i.invoice_number = t.invoice_item_number
+GROUP BY
+    c.customer_name
+;
+
+EXPLAIN (ANALYZE, FORMAT JSON)
+SELECT
+    c.customer_name,
+    SUM(i.quantity * i.price) AS "invoicing"
+FROM frutally.customers AS c
+INNER JOIN frutally.invoices_and_item_desnormalized AS d ON c.identification_document = d.identification_document
+GROUP BY
+    c.customer_name
+;
 
 --
 -- 04.03
 --
+EXPLAIN (ANALYZE, FORMAT JSON)
+SELECT
+i   *
+FROM frutally.products
+WHERE
+    code = '1040107'
+;
+
+EXPLAIN (ANALYZE, FORMAT JSON)
+SELECT
+    c.customer_name,
+    COUNT(*)
+FROM frutally.customers AS c
+INNER JOIN frutally.invoices AS i ON c.identification_number = i.identification_number
+GROUP BY
+    c.customer_name
+;
 
 --
 -- 04.05
 --
+SELECT
+    EXTRACT(YEAR FROM sold) AS "year",
+    COUNT(*)
+FROM frutally.invoices AS i
+GROUP BY
+    EXTRACT(YEAR FROM sold)
+ORDER BY
+    EXTRACT(YEAR FROM sold)
+;
 
+EXPLAIN ANALYZE
+SELECT
+    *
+FROM frutally.invoices_part
+WHERE
+    sold BETWEEN '2023-06-01' AND '2023-12-31'
+;
+ 
 --
 -- 04.07
 --
+EXPLAIN ANALYZE
+SELECT
+    *
+FROM frutally.invoice_items
+WHERE
+    quantity * 1.00001 >= 10
+    AND quantity / 0.99999 <= 20
+;
+EXPLAIN ANALYZE
+SELECT
+    *
+FROM frutally.invoice_items
+WHERE
+    quantity_real * 1.00001 >= 10
+    AND quantity_real / 0.99999 <= 20
+;
 
-
+EXPLAIN ANALYZE
+SELECT
+    *
+FROM frutally.invoice_items
+WHERE
+    quantity = 1000
+;
+EXPLAIN ANALYZE
+SELECT
+    *
+FROM frutally.invoice_items
+WHERE
+    quantity_unique = 1000
+;
 /**
  * 05 - Otimização Prática de Consuiltas SQL no PostgreSQL
  */

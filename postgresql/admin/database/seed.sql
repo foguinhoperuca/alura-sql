@@ -41,3 +41,43 @@ INSERT INTO frutally.customers_geo (identification_document, geom) VALUES
     ('95939180787', ST_GeomFromText('POINT(-43.2096 -22.9035)', 4326))
 ; 
 
+INSERT INTO frutally.invoice_and_item_desnormalized (
+  identification_document,
+  registration_number,
+  sold,
+  invoice_number,
+  taxes,
+  product_code,
+  quantity,
+)
+SELECT
+  identification_document,
+  registration_number,
+  sold,
+  invoice_number,
+  taxes,
+  product_code,
+  quantity,
+  price
+FROM frutally.invoices AS i
+INNER JOIN invoices_items AS t ON i.invoice_number = t.invoice_item_number
+;
+
+-- performance_optimization 04.05
+INSERT INTO frutally.invoices_part SELECT * FROM frutally.invoices WHERE sold >= '2015-01-01' AND sold <= '2016-01-01';
+INSERT INTO frutally.invoices_part SELECT * FROM frutally.invoices WHERE sold >= '2016-01-01' AND sold <= '2017-01-01';
+INSERT INTO frutally.invoices_part SELECT * FROM frutally.invoices WHERE sold >= '2017-01-01' AND sold <= '2018-01-01';
+INSERT INTO frutally.invoices_part SELECT * FROM frutally.invoices WHERE sold >= '2018-01-01' AND sold <= '2019-01-01';
+INSERT INTO frutally.invoices_part SELECT * FROM frutally.invoices WHERE sold >= '2019-01-01' AND sold <= '2020-01-01';
+INSERT INTO frutally.invoices_part SELECT * FROM frutally.invoices WHERE sold >= '2020-01-01' AND sold <= '2021-01-01';
+INSERT INTO frutally.invoices_part SELECT * FROM frutally.invoices WHERE sold >= '2021-01-01' AND sold <= '2022-01-01';
+INSERT INTO frutally.invoices_part SELECT * FROM frutally.invoices WHERE sold >= '2022-01-01' AND sold <= '2023-01-01';
+
+-- performance_optimization 04.07
+UPDATE frutally.invoice_items SET
+    quantity_real = quantity
+;
+
+UPDATE frutally.invoice_items SET
+    quantity_unique = quantity
+;

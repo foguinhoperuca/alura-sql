@@ -17,6 +17,7 @@ CREATE TABLE frutally.products (
   flavor VARCHAR(32),
   list_price REAL NOT NULL
 );
+ALTER TABLE frutally.products ADD PRIMARY KEY (code);
 
 DROP TABLE IF EXISTS frutally.customers;
 CREATE TABLE frutally.customers (
@@ -36,6 +37,7 @@ CREATE TABLE frutally.customers (
   purchase_volume REAL,
   first_time_buying BOOLEAN
 );
+ALTER TABLE frutally.customers ADD CONSTRAINT unique_identification_document UNIQUE(identification_document);
 
 DROP TABLE IF EXISTS frutally.invoices;
 CREATE TABLE frutally.invoices (
@@ -45,6 +47,10 @@ CREATE TABLE frutally.invoices (
   invoice_number SERIAL PRIMARY KEY,
   taxes REAL NOT NULL
 );
+ALTER TABLE frutally.invoices ADD CONSTRAINT fk_invoices_identification_document FOREIGN KEY (identification_document) REFERENCES frutally.customers(identification_document);
+ALTER TABLE frutally.invoices DROP CONSTRAINT fk_invoices_identification_document;
+ALTER TABLE frutally.invoices ADD COLUMN invoice_number_unique INT;
+ALTER TABLE frutally.invoices ADD CONSTRAINT uk_invoice_number_unique UNIQUE(invoice_number_unique);
 
 DROP TABLE IF EXISTS frutally.invoice_items;
 CREATE TABLE frutally.invoice_items (
@@ -53,6 +59,7 @@ CREATE TABLE frutally.invoice_items (
   quantity INT NOT NULL,
   price REAL NOT NULL
 );
+ALTER TABLE frutally.invoice_items ADD COLUMN quantity_real REAL;
 
  -- backup_restore: class 01.03
 ALTER TABLE frutally.invoices ADD COLUMN created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
@@ -74,3 +81,36 @@ BEGIN
     END LOOP;
 END;
 $$ LANGUAGE plpgsql;
+
+-- performance_optimization 04.01
+CREATE TABLE frutally.invoice_and_item_desnormalized (
+  identification_number VARCHAR(16) NOT NULL,
+  registration_number VARCHAR(8) NOT NULL,
+  sold DATE,
+  invoice_number SERIAL PRIMARY KEY,
+  taxes REAL NOT NULL,
+  product_code VARCHAR(16) NOT NULL,
+  quantity INT NOT NULL,
+  price REAL NOT NULL
+);
+
+-- performance_optimization 04.07
+
+DROP TABLE IF EXISTS frutally.invoices_part;
+CREATE TABLE frutally.invoices_part (
+  identification_document VARCHAR(16) NOT NULL,
+  registration_number VARCHAR(8) NOT NULL,
+  sold DATE,
+  invoice_number SERIAL PRIMARY KEY,
+  taxes REAL NOT NULL
+)
+PARTITION BY RANGE(sold)
+;
+CREATE TABLE invoices_part_2015 PARTITION OF invoices_part FOR VALUES FROM ('2015-01-01') TO ('2016-01-01');
+CREATE TABLE invoices_part_2015 PARTITION OF invoices_part FOR VALUES FROM ('2016-01-01') TO ('2017-01-01');
+CREATE TABLE invoices_part_2015 PARTITION OF invoices_part FOR VALUES FROM ('2017-01-01') TO ('2018-01-01');
+CREATE TABLE invoices_part_2015 PARTITION OF invoices_part FOR VALUES FROM ('2018-01-01') TO ('2019-01-01');
+CREATE TABLE invoices_part_2015 PARTITION OF invoices_part FOR VALUES FROM ('2019-01-01') TO ('2020-01-01');
+CREATE TABLE invoices_part_2015 PARTITION OF invoices_part FOR VALUES FROM ('2020-01-01') TO ('2021-01-01');
+CREATE TABLE invoices_part_2015 PARTITION OF invoices_part FOR VALUES FROM ('2021-01-01') TO ('2022-01-01');
+CREATE TABLE invoices_part_2015 PARTITION OF invoices_part FOR VALUES FROM ('2022-01-01') TO ('2023-01-01');
