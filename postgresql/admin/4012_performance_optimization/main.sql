@@ -510,7 +510,64 @@ WHERE
 --
 -- 05.01
 --
+-- SET session.forgesys_role = :forgesys_role;
+DO $$
+DECLARE
+  dba TEXT;
+  forgesys_role TEXT;
+  dbas TEXT[];
+BEGIN
+--  SELECT string_to_array(current_setting('session.dbas'), ',') INTO dbas;
+--  SELECT current_setting('session.forgesys_role') INTO forgesys_role;
+--  FOREACH dba IN ARRAY dbas LOOP
+--    RAISE INFO 'Current dba: % ::: Grant: %', dba, forgesys_role;
+--    EXECUTE format('GRANT %1$s TO "%2$s"', forgesys_role, dba);
+--  END LOOP;
+    -- TODO implement as loop to delete all constraints
+    SELECT
+        con.constraint_name,
+        con.contraint_type,
+        con.table_name,
+        con.constraint_schema
+        col.column_name
+    FROM information_schema.table_constraint AS con
+    JOIN information_schema.constraint_column_usage AS col ON con.contraint_name = col.constraint_name
+    WHERE
+        con.constraint_schema = 'frutally'
+    ORDER BY
+        con.table_name,
+        con.constraint_type
+    ;
+END $$;
 
+EXPLAIN (ANALYZE, FORMAT JSON)
+SELECT
+    c.customer_name,
+    c.identification_document,
+    c.city,
+    s.salesman_name,
+    s.registration_number,
+    p.product_name,
+    p.packaging,
+    p.list_price,
+    i.sold,
+    t.taxes,
+    t.quantity,
+    t.price,
+    (t.quantity * t.price) AS "selling_value",
+    ((t.quantity * t.price)* (1 + i.taxes / 100)) AS "price_with_taxes"
+FROM frutally.invoice_items AS t
+JOIN frutally invoices AS i ON i.invoice_number = t.invoice_item_number
+JOIN frutally.products AS p ON t.product_code = p.code
+JOIN frutally.customers AS c ON t.identification_document = c. identification_document
+JOIN frutally.salesmans AS s ON i.registration_number = s.registration_number
+WHERE
+    (i.sold BETWEEN '2020-01-01' AND '2023-12-31')
+    AND c.city IS NOT NULL
+    AND c.age > 18
+    AND p.list_price > 2.3
+    AND s.vacation IS FALSE
+;
 --
 -- 05.03
 --
