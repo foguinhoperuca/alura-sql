@@ -34,6 +34,12 @@ db-get-extra-content:
 	# administracao-postgresql-desempenho-otimizacao.01.03
 	wget https://cdn3.gnarususercontent.com.br/4012-postgresql/Projeto%20-%20Download/4012%20-%20Preparando%20o%20ambiente%20-%20Scripts%20do%20curso/4012%20-%20Preparando%20o%20ambiente%20-%20Scripts%20do%20curso.zip
 
+	# administracao-postgresq-replicacao-alta-disponibilidade.01.02
+	wget https://cdn3.gnarususercontent.com.br/4013-administracao-postgresql/Projeto%20-%20Downloads/4013%20-%20V%C3%ADdeo%201.0A%20-%20Preparando%20a%20base%20de%20dados/4013%20-%20V%C3%ADdeo%201.0A%20-%20Preparando%20a%20base%20de%20dados.zip
+
+	# administracao-postgresq-replicacao-alta-disponibilidade.01.03
+	Wget https://cdn3.gnarususercontent.com.br/4013-administracao-postgresql/Projeto%20-%20Downloads/4013%20-%20Video%201.0B%20-%20Acessando%20os%20scripts%20do%20curso/4013%20-%20Video%201.0B%20-%20Acessando%20os%20scripts%20do%20curso.zip
+
 db-pgbench:
 	pgbench -i -s 10 pgbench_test
 	pgbench -c 10 -t 1000 pgbench_test
@@ -60,6 +66,10 @@ db-backup-mswindows:
 
 db-pgwalldump:
 	pg_waldump -q $(WAL_FILENAME)
+
+db-backup-to-slave:
+	pg_basebackup -D '/var/data/postgresql/alura/slave' -Fp -Xs _P -R -h localhost -U alura
+	pg_ctl register -N "postgresql-slave" -D /var/data/postgresql/alura/slave
 
 MAKEFILE_DIR := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 
